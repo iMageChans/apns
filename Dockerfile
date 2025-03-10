@@ -27,7 +27,6 @@ COPY . .
 # 收集静态文件
 RUN mkdir -p /app/staticfiles
 RUN python manage.py collectstatic --noinput
-RUN python manage.py migrate
 
 # 暴露端口
 EXPOSE 8000
