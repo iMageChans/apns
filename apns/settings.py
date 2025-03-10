@@ -158,5 +158,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 # Token settings
 TOKEN_COOKIE_NAME = 'joker'
 
+FORCE_SCRIPT_NAME = '/apns'
+
 # Base URL for external services
 BASE_URL = os.environ.get('BASE_URL', 'https://users.pulseheath.com/')
