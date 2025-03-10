@@ -25,7 +25,7 @@ services:
     container_name: apns_web
     volumes:
       - ./:/app
-      - ./db.sqlite3:/app/db.sqlite3  # 直接映射本地数据库文件
+      - ./db.sqlite3:/app/db.sqlite3:rw  # 直接映射本地数据库文件
       - ./staticfiles:/app/staticfiles  # 项目静态文件
       - ./media:/app/media  # 媒体文件
       - /var/www/apns/static:/app/staticfiles
@@ -49,7 +49,7 @@ services:
     <<: *common-config
     container_name: apns_celery_beat
     environment:
-      - BASE_URL=http://localhost:8000
+      - BASE_URL=https://users.pulseheath.com/
     command: celery -A apns beat --loglevel=info
 
   # Redis for Celery
