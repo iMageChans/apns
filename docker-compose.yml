@@ -25,7 +25,7 @@ services:
     container_name: apns_web
     volumes:
       - ./:/app
-      - ./db.sqlite3:/app/db.sqlite3:rw  # 直接映射本地数据库文件
+      - ./db.sqlite3:/app/db.sqlite3  # 直接映射本地数据库文件
       - ./staticfiles:/app/staticfiles  # 项目静态文件
       - ./media:/app/media  # 媒体文件
       - /var/www/apns/static:/app/staticfiles
@@ -34,7 +34,11 @@ services:
       - "8003:8003"
     environment:
       - BASE_URL=https://users.pulseheath.com/
-    command: ["python", "manage.py", "runserver", "0.0.0.0:8003"]
+    command: >
+      bash -c "
+        python manage.py migrate --noinput &&
+        python manage.py runserver 0.0.0.0:8003
+      "
 
   # Celery Worker
   celery_worker:
@@ -42,7 +46,10 @@ services:
     container_name: apns_celery_worker
     environment:
       - BASE_URL=https://users.pulseheath.com/
-    command: celery -A apns worker --loglevel=info
+    command: ["celery", "-A", "apns", "worker", "--loglevel=info"]
+    depends_on:
+      - web
+      - redis_celery
 
   # Celery Beat
   celery_beat:
@@ -50,7 +57,10 @@ services:
     container_name: apns_celery_beat
     environment:
       - BASE_URL=https://users.pulseheath.com/
-    command: celery -A apns beat --loglevel=info
+    command: ["celery", "-A", "apns", "beat", "--loglevel=info"]
+    depends_on:
+      - web
+      - redis_celery
 
   # Redis for Celery
   redis_celery:
