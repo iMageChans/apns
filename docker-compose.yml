@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Web 服务
+  web:
+    build: .
+    container_name: apns_web
+    volumes:
+      - ./:/app
+      - ./db.sqlite3:/app/db.sqlite3  # 直接映射本地数据库文件
+      - ./staticfiles:/app/staticfiles  # 项目静态文件
+      - ./media:/app/media  # 媒体文件
+      - /var/www/apns/static:/app/staticfiles
+      - /var/www/apns/static:/app/media
+    ports:
+      - "8003:8003"
+    environment:
+      - DEBUG=False
+      - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com
+      - STATIC_URL=/apns/static/
+      - MEDIA_URL=/apns/media/
+      - BASE_URL=https://users.pulseheath.com/
+      - CELERY_BROKER_URL=redis://redis_celery:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
+    restart: always
+    command: ["python", "manage.py", "runserver", "0.0.0.0:8003"]
+    depends_on:
+      - redis_celery
+
+  # Celery Worker
+  celery_worker:
+    build: .
+    container_name: apns_celery_worker
+    volumes:
+      - ./data:/app/data  # 确保主机上的 ./data 目录存在
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=False
+      - BASE_URL=https://users.pulseheath.com/
+      - CELERY_BROKER_URL=redis://redis_celery:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
+    restart: always
+    command: celery -A apns worker --loglevel=info
+    depends_on:
+      - redis_celery
+
+  # Celery Beat
+  celery_beat:
+    build: .
+    container_name: apns_celery_beat
+    volumes:
+      - ./data:/app/data  # 确保主机上的 ./data 目录存在
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=False
+      - BASE_URL=http://localhost:8000
+      - CELERY_BROKER_URL=redis://redis_celery:6380/0
+      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
+    restart: always
+    command: celery -A apns beat --loglevel=info
+    depends_on:
+      - redis_celery
+
+  # Redis for Celery
+  redis_celery:
+    image: redis:7-alpine
+    container_name: apns_redis_celery
+    command: redis-server --port 6380
+    ports:
+      - "6380:6380"  # 使用不同的端口
+    volumes:
+      - redis_celery_data:/data
+    restart: always
+
+volumes:
+  redis_celery_data: 
