@@ -123,11 +123,11 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = os.environ.get('STATIC_URL', '/apns/static/')
-STATIC_ROOT = os.environ.get('STATIC_ROOT', os.path.join(BASE_DIR, 'staticfiles'))
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
 MEDIA_URL = os.environ.get('MEDIA_URL', '/apns/media/')
-MEDIA_ROOT = os.environ.get('MEDIA_ROOT', os.path.join(BASE_DIR, 'media'))
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -158,7 +158,7 @@ CELERY_RESULT_SERIALIZER = 'json'
 # Token settings
 TOKEN_COOKIE_NAME = 'joker'
 
-FORCE_SCRIPT_NAME = '/apns'
+# FORCE_SCRIPT_NAME = '/apns'
 
 # Base URL for external services
 BASE_URL = os.environ.get('BASE_URL', 'https://users.pulseheath.com/')
