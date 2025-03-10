@@ -1,9 +1,27 @@
 version: '3.8'
 
+x-common-config: &common-config
+  build: .
+  volumes:
+    - ./:/app
+    - ./db.sqlite3:/app/db.sqlite3
+    - ./staticfiles:/app/staticfiles
+    - ./media:/app/media
+  environment:
+    - DEBUG=False
+    - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com
+    - STATIC_URL=/apns/static/
+    - MEDIA_URL=/apns/media/
+    - CELERY_BROKER_URL=redis://redis_celery:6380/0
+    - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
+  restart: always
+  depends_on:
+    - redis_celery
+
 services:
   # Web 服务
   web:
-    build: .
+    <<: *common-config
     container_name: apns_web
     volumes:
       - ./:/app
@@ -15,63 +33,24 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com
-      - STATIC_URL=/apns/static/
-      - MEDIA_URL=/apns/media/
       - BASE_URL=https://users.pulseheath.com/
-      - CELERY_BROKER_URL=redis://redis_celery:6380/0
-      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
-    restart: always
     command: ["python", "manage.py", "runserver", "0.0.0.0:8003"]
-    depends_on:
-      - redis_celery
 
   # Celery Worker
   celery_worker:
-    image: apns_web  # 使用与web服务相同的镜像
+    <<: *common-config
     container_name: apns_celery_worker
-    volumes:
-      - ./:/app  # 与web服务保持一致的卷映射
-      - ./db.sqlite3:/app/db.sqlite3
-      - ./staticfiles:/app/staticfiles
-      - ./media:/app/media
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com
-      - STATIC_URL=/apns/static/
-      - MEDIA_URL=/apns/media/
       - BASE_URL=https://users.pulseheath.com/
-      - CELERY_BROKER_URL=redis://redis_celery:6380/0
-      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
-    restart: always
     command: celery -A apns worker --loglevel=info
-    depends_on:
-      - redis_celery
-      - web  # 确保web服务先启动，因为我们使用web服务的镜像
 
   # Celery Beat
   celery_beat:
-    image: apns_web  # 使用与web服务相同的镜像
+    <<: *common-config
     container_name: apns_celery_beat
-    volumes:
-      - ./:/app  # 与web服务保持一致的卷映射
-      - ./db.sqlite3:/app/db.sqlite3
-      - ./staticfiles:/app/staticfiles
-      - ./media:/app/media
     environment:
-      - DEBUG=False
-      - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com
-      - STATIC_URL=/apns/static/
-      - MEDIA_URL=/apns/media/
       - BASE_URL=http://localhost:8000
-      - CELERY_BROKER_URL=redis://redis_celery:6380/0
-      - CELERY_RESULT_BACKEND=redis://redis_celery:6380/0
-    restart: always
     command: celery -A apns beat --loglevel=info
-    depends_on:
-      - redis_celery
-      - web  # 确保web服务先启动，因为我们使用web服务的镜像
 
   # Redis for Celery
   redis_celery:
