@@ -13,7 +13,7 @@ class AppleAppConfigurationAdmin(admin.ModelAdmin):
             'fields': ('name', 'bundle_id', 'is_active')
         }),
         ('认证信息', {
-            'fields': ('team_id', 'key_id', 'auth_key', 'auth_key_file')
+            'fields': ('team_id', 'key_id', 'auth_key', 'auth_key_file', 'shared_secret')
         }),
         ('环境设置', {
             'fields': ('is_production',)
