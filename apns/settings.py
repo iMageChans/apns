@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'devices.apps.DevicesConfig',
     'configurations.apps.ConfigurationsConfig',
     'corsheaders',
+    'purchase.apps.PurchaseConfig'
 ]
 
 MIDDLEWARE = [

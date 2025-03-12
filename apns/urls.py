@@ -22,4 +22,5 @@ urlpatterns = [
     path('api/devices/', include('devices.urls')),
     path('api/configurations/', include('configurations.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/purchase/', include('purchase.urls')),
 ]

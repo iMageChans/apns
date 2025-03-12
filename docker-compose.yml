@@ -5,8 +5,6 @@ x-common-config: &common-config
   volumes:
     - ./:/app
     - ./db.sqlite3:/app/db.sqlite3
-    - ./staticfiles:/app/staticfiles
-    - ./media:/app/media
   environment:
     - DEBUG=False
     - ALLOWED_HOSTS=localhost,127.0.0.1,users.pulseheath.com

@@ -5,6 +5,7 @@
 - [设备管理 API](#设备管理-api)
 - [通知设置 API](#通知设置-api)
 - [通知发送 API](#通知发送-api)
+- [苹果内购 API](#苹果内购-api)
 
 ## 设备管理 API
 
@@ -483,12 +484,192 @@
   }
   ```
 
+## 苹果内购 API
+
+### 购买验证
+
+#### 验证购买收据
+
+验证苹果内购收据并处理购买。
+
+- **URL**: `/purchase/verify/`
+- **方法**: `POST`
+- **权限**: 需要认证
+- **请求体**:
+  ```json
+  {
+    "receipt_data": "苹果收据数据",
+    "user_id": 123,
+    "product_id": "Monthly_Subscription",
+    "transaction_id": "1000000123456789",
+    "app_id": "com.example.app",
+    "original_transaction_id": "1000000123456789"
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "code": 200,
+    "msg": "success",
+    "data": {
+      "id": 1,
+      "user_id": 123,
+      "app_id": "com.example.app",
+      "product_id": "Monthly_Subscription",
+      "transaction_id": "1000000123456789",
+      "original_transaction_id": "1000000123456789",
+      "purchase_date": "2023-01-01T12:00:00Z",
+      "expires_at": "2023-02-01T12:00:00Z",
+      "is_active": true,
+      "is_successful": true,
+      "status": "success",
+      "days_remaining": 30,
+      "status_display": "Success",
+      "created_at": 1672574400,
+      "updated_at": 1672574400
+    }
+  }
+  ```
+
+### 苹果服务器通知
+
+#### 接收苹果服务器通知
+
+接收并处理来自苹果服务器的通知（如订阅续费、取消等）。
+
+- **URL**: `/purchase/webhook/`
+- **方法**: `POST`
+- **权限**: 无需认证（苹果服务器调用）
+- **请求体**:
+  ```json
+  {
+    "notification_type": "DID_RENEW",
+    "app_id": "com.example.app",
+    "latest_receipt": "苹果收据数据",
+    "latest_receipt_info": {
+      "transaction_id": "1000000123456789",
+      "original_transaction_id": "1000000123456789",
+      "product_id": "Monthly_Subscription",
+      "purchase_date_ms": "1672574400000",
+      "expires_date_ms": "1675252800000"
+    },
+    "auto_renew_status": true,
+    "user_id": 123
+  }
+  ```
+- **响应**:
+  ```json
+  {
+    "status": "success"
+  }
+  ```
+
+### 购买记录查询
+
+#### 获取购买记录列表
+
+获取用户的购买记录列表。
+
+- **URL**: `/purchase/list/`
+- **方法**: `GET`
+- **权限**: 需要认证
+- **查询参数**:
+  - `user_id`: 用户ID
+  - `is_active`: 是否活跃（true/false）
+  - `app_id`: 应用ID
+  - `product_id`: 产品ID
+- **响应**:
+  ```json
+  {
+    "count": 1,
+    "next": null,
+    "previous": null,
+    "results": [
+      {
+        "id": 1,
+        "user_id": 123,
+        "app_id": "com.example.app",
+        "product_id": "Monthly_Subscription",
+        "transaction_id": "1000000123456789",
+        "original_transaction_id": "1000000123456789",
+        "purchase_date": "2023-01-01T12:00:00Z",
+        "expires_at": "2023-02-01T12:00:00Z",
+        "is_active": true,
+        "is_successful": true,
+        "status": "success",
+        "days_remaining": 30,
+        "status_display": "Success",
+        "created_at": 1672574400,
+        "updated_at": 1672574400
+      }
+    ]
+  }
+  ```
+
+#### 获取单个购买记录
+
+获取指定ID的购买记录详情。
+
+- **URL**: `/purchase/list/{id}/`
+- **方法**: `GET`
+- **权限**: 需要认证
+- **响应**:
+  ```json
+  {
+    "id": 1,
+    "user_id": 123,
+    "app_id": "com.example.app",
+    "product_id": "Monthly_Subscription",
+    "transaction_id": "1000000123456789",
+    "original_transaction_id": "1000000123456789",
+    "purchase_date": "2023-01-01T12:00:00Z",
+    "expires_at": "2023-02-01T12:00:00Z",
+    "is_active": true,
+    "is_successful": true,
+    "status": "success",
+    "days_remaining": 30,
+    "status_display": "Success",
+    "created_at": 1672574400,
+    "updated_at": 1672574400
+  }
+  ```
+
+#### 获取用户订阅状态
+
+获取指定用户的当前订阅状态。
+
+- **URL**: `/purchase/status/{user_id}/`
+- **方法**: `GET`
+- **权限**: 需要认证
+- **响应**:
+  ```json
+  {
+    "code": 200,
+    "msg": "success",
+    "data": {
+      "has_active_subscription": true,
+      "subscription_info": {
+        "user_id": 123,
+        "product_id": "Monthly_Subscription",
+        "is_active": true,
+        "is_successful": true,
+        "purchase_date": "2023-01-01T12:00:00Z",
+        "expires_at": "2023-02-01T12:00:00Z",
+        "status": "success",
+        "days_remaining": 30,
+        "is_expired": false,
+        "created_at": 1672574400,
+        "updated_at": 1672574400
+      }
+    }
+  }
+  ```
+
 ## 错误响应
 
 所有 API 在发生错误时将返回以下格式的响应：
 
 ```json
-json
 {
   "code": 400,
   "msg": "错误信息",
